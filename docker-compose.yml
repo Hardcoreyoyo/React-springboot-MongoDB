@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+
+  node:
+    build:
+      context: ./nextjs-material-dashboard
+      dockerfile: Dockerfile
+    depends_on:
+      - springboot
+    ports:
+      - "3000:3000"
+    networks:
+      - serviceNet
+
+  springboot:
+    build:
+      context: ./springbootMongo/ServiceMongoCRUD/target
+      dockerfile: Dockerfile
+    container_name: docker-springboot
+    restart: always    
+    depends_on:
+      - db
+    ports:
+      - "8087:8087"
+    networks:
+      - serviceNet
+
+  db:
+    image: mongo:5.0.6
+    container_name: docker-mongo506
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=rootuser
+      - MONGO_INITDB_ROOT_PASSWORD=rootpass
+    networks:
+      - serviceNet
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha
+    container_name: docker-mongo-express
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=rootuser
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=rootpass
+      - ME_CONFIG_MONGODB_SERVER=db
+    networks:
+      - serviceNet
+
+networks:
+  serviceNet:
+    driver: bridge
+
+
+
